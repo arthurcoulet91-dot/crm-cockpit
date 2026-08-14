@@ -33,10 +33,14 @@ export function PipelineBoard({
   clients: { id: string; name: string }[]
 }) {
   const [items, setItems] = React.useState(opportunities)
+  const [syncedOpportunities, setSyncedOpportunities] = React.useState(opportunities)
   const [dragId, setDragId] = React.useState<string | null>(null)
   const [dragOverStage, setDragOverStage] = React.useState<OpportunityStage | null>(null)
 
-  React.useEffect(() => setItems(opportunities), [opportunities])
+  if (opportunities !== syncedOpportunities) {
+    setSyncedOpportunities(opportunities)
+    setItems(opportunities)
+  }
 
   function handleDrop(stage: OpportunityStage) {
     setDragOverStage(null)

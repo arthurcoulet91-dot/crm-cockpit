@@ -2,16 +2,13 @@ import { PageHeader } from "@/components/page-header"
 import { CalendarView, type AgendaItem } from "@/components/calendar/calendar-view"
 import { createClient } from "@/lib/supabase/server"
 import { fetchUpcomingGoogleEvents, getValidGoogleAccessToken } from "@/lib/google-calendar"
+import { daysFromNowISO } from "@/lib/format"
 
 export default async function CalendarPage() {
   const supabase = await createClient()
 
-  const in90Days = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .slice(0, 10)
-  const from90DaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .slice(0, 10)
+  const in90Days = daysFromNowISO(90)
+  const from90DaysAgo = daysFromNowISO(-90)
 
   const [tasksRes, contractsRes] = await Promise.all([
     supabase

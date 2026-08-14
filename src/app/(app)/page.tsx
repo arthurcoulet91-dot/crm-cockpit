@@ -15,7 +15,7 @@ import { EmptyState } from "@/components/empty-state"
 import { TodayTasks } from "@/components/dashboard/today-tasks"
 import { createClient } from "@/lib/supabase/server"
 import { resolvePeriod, type PeriodKey } from "@/lib/period"
-import { formatCurrency, formatDate } from "@/lib/format"
+import { formatCurrency, formatDate, todayISO, daysFromNowISO } from "@/lib/format"
 import { stageLabel } from "@/components/status-badge"
 import { fetchUpcomingGoogleEvents, getValidGoogleAccessToken } from "@/lib/google-calendar"
 import { cn } from "@/lib/utils"
@@ -34,10 +34,8 @@ export default async function DashboardPage() {
 
   const thisMonth = resolvePeriod("month" satisfies PeriodKey)
   const lastMonth = resolvePeriod("last_month" satisfies PeriodKey)
-  const today = new Date().toISOString().slice(0, 10)
-  const in60Days = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .slice(0, 10)
+  const today = todayISO()
+  const in60Days = daysFromNowISO(60)
 
   const [
     thisMonthPaymentsRes,

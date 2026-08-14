@@ -21,7 +21,6 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
 } from "@/components/ui/command"
 import { searchEverything, type SearchResult } from "@/lib/actions/search"
 
@@ -61,10 +60,7 @@ export function CommandPalette({
   const [pending, startTransition] = React.useTransition()
 
   React.useEffect(() => {
-    if (query.trim().length < 2) {
-      setResults([])
-      return
-    }
+    if (query.trim().length < 2) return
     const handle = setTimeout(() => {
       startTransition(async () => {
         const data = await searchEverything(query)
@@ -74,22 +70,23 @@ export function CommandPalette({
     return () => clearTimeout(handle)
   }, [query])
 
-  React.useEffect(() => {
-    if (!open) {
+  const go = (url: string) => {
+    handleOpenChange(false)
+    router.push(url)
+  }
+
+  function handleOpenChange(next: boolean) {
+    onOpenChange(next)
+    if (!next) {
       setQuery("")
       setResults([])
     }
-  }, [open])
-
-  const go = (url: string) => {
-    onOpenChange(false)
-    router.push(url)
   }
 
   const isSearching = query.trim().length >= 2
 
   return (
-    <CommandDialog open={open} onOpenChange={onOpenChange} title="Recherche rapide">
+    <CommandDialog open={open} onOpenChange={handleOpenChange} title="Recherche rapide">
       <CommandInput
         placeholder="Rechercher un client, un contrat, une tâche…"
         value={query}

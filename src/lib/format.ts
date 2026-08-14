@@ -35,3 +35,11 @@ export function formatDateTime(date: string | null | undefined) {
   if (!date) return "—"
   return dateTimeFormatter.format(new Date(date))
 }
+
+export function todayISO() {
+  return new Date().toISOString().slice(0, 10)
+}
+
+export function daysFromNowISO(days: number) {
+  return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+}
