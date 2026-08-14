@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
+import { getEffectiveOwnerId } from "@/lib/actions/team"
 import type { ContractRecurrence, ContractStatus } from "@/lib/supabase/types"
 
 function str(formData: FormData, key: string) {
@@ -17,16 +18,13 @@ function num(formData: FormData, key: string) {
 
 export async function createContractRecord(formData: FormData) {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) throw new Error("Non authentifié")
+  const ownerId = await getEffectiveOwnerId()
 
   const clientId = str(formData, "client_id")
   if (!clientId) throw new Error("Client requis")
 
   const { error } = await supabase.from("contracts").insert({
-    user_id: user.id,
+    user_id: ownerId,
     client_id: clientId,
     title: str(formData, "title") ?? "",
     amount: num(formData, "amount"),

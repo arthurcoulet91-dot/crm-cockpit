@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
 import { fetchGhlContacts, fetchGhlOpportunities } from "@/lib/ghl"
+import { getEffectiveOwnerId } from "@/lib/actions/team"
 import type { IntegrationProvider } from "@/lib/supabase/types"
 
 export async function disconnectIntegration(provider: IntegrationProvider) {
@@ -18,10 +19,7 @@ export async function disconnectIntegration(provider: IntegrationProvider) {
 
 export async function saveGhlConnection(formData: FormData) {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) throw new Error("Non authentifié")
+  const ownerId = await getEffectiveOwnerId()
 
   const token = formData.get("token")
   const locationId = formData.get("location_id")
@@ -32,7 +30,7 @@ export async function saveGhlConnection(formData: FormData) {
 
   const { error } = await supabase.from("integration_connections").upsert(
     {
-      user_id: user.id,
+      user_id: ownerId,
       provider: "ghl",
       access_token: token.trim(),
       external_account_id: typeof locationId === "string" ? locationId.trim() : null,
@@ -45,10 +43,7 @@ export async function saveGhlConnection(formData: FormData) {
 
 export async function syncGhlData(): Promise<{ contacts: number; opportunities: number }> {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) throw new Error("Non authentifié")
+  const ownerId = await getEffectiveOwnerId()
 
   const { data: connection } = await supabase
     .from("integration_connections")
@@ -74,7 +69,7 @@ export async function syncGhlData(): Promise<{ contacts: number; opportunities: 
 
     const { error } = await supabase.from("clients").upsert(
       {
-        user_id: user.id,
+        user_id: ownerId,
         source: "ghl",
         ghl_contact_id: contact.id,
         name,
@@ -107,7 +102,7 @@ export async function syncGhlData(): Promise<{ contacts: number; opportunities: 
   for (const opp of opportunities) {
     const { error } = await supabase.from("opportunities").upsert(
       {
-        user_id: user.id,
+        user_id: ownerId,
         source: "ghl",
         ghl_opportunity_id: opp.id,
         title: opp.name,

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
+import { getEffectiveOwnerId } from "@/lib/actions/team"
 import type { ClientType } from "@/lib/supabase/types"
 
 function str(formData: FormData, key: string) {
@@ -12,13 +13,10 @@ function str(formData: FormData, key: string) {
 
 export async function createClientRecord(formData: FormData) {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) throw new Error("Non authentifié")
+  const ownerId = await getEffectiveOwnerId()
 
   const { error } = await supabase.from("clients").insert({
-    user_id: user.id,
+    user_id: ownerId,
     name: str(formData, "name") ?? "",
     type: (str(formData, "type") ?? "pro") as ClientType,
     company: str(formData, "company"),

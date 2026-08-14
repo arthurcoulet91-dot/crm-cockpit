@@ -11,6 +11,7 @@ import {
   CalendarDays,
   Wallet,
   Settings,
+  UsersRound,
   Loader2,
 } from "lucide-react"
 
@@ -32,6 +33,7 @@ const navItems = [
   { title: "Tâches", url: "/tasks", icon: CheckSquare2 },
   { title: "Calendrier", url: "/calendar", icon: CalendarDays },
   { title: "Finances", url: "/finances", icon: Wallet },
+  { title: "Équipe", url: "/settings/team", icon: UsersRound },
   { title: "Intégrations", url: "/settings/integrations", icon: Settings },
 ]
 

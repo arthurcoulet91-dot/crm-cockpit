@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 
 import { exchangeCodeForTokens } from "@/lib/google-calendar"
 import { createClient } from "@/lib/supabase/server"
+import { getEffectiveOwnerId } from "@/lib/actions/team"
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -27,10 +28,11 @@ export async function GET(request: NextRequest) {
   try {
     const tokens = await exchangeCodeForTokens(code)
     const expiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString()
+    const ownerId = await getEffectiveOwnerId()
 
     const { error } = await supabase.from("integration_connections").upsert(
       {
-        user_id: user.id,
+        user_id: ownerId,
         provider: "google_calendar",
         access_token: tokens.access_token,
         refresh_token: tokens.refresh_token,

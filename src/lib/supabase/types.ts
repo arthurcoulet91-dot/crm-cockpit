@@ -223,6 +223,31 @@ export interface Database {
       }
     }
     Views: Record<string, never>
-    Functions: Record<string, never>
+    Functions: {
+      effective_owner_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      has_data_access: {
+        Args: { target_user_id: string }
+        Returns: boolean
+      }
+      invite_team_member: {
+        Args: { target_email: string }
+        Returns: undefined
+      }
+      remove_team_member: {
+        Args: { target_member_id: string }
+        Returns: undefined
+      }
+      list_team_members: {
+        Args: Record<PropertyKey, never>
+        Returns: { member_id: string; email: string; joined_at: string }[]
+      }
+      get_my_team_owner: {
+        Args: Record<PropertyKey, never>
+        Returns: { owner_id: string; email: string }[]
+      }
+    }
   }
 }

@@ -11,6 +11,7 @@ import {
   CalendarDays,
   Wallet,
   Settings,
+  UsersRound,
   Command,
 } from "lucide-react"
 
@@ -38,6 +39,7 @@ const navMain = [
 ]
 
 const navSettings = [
+  { title: "Équipe", url: "/settings/team", icon: UsersRound },
   { title: "Intégrations", url: "/settings/integrations", icon: Settings },
 ]
 

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
+import { getEffectiveOwnerId } from "@/lib/actions/team"
 import type { TaskPriority, TaskStatus } from "@/lib/supabase/types"
 
 function str(formData: FormData, key: string) {
@@ -12,13 +13,10 @@ function str(formData: FormData, key: string) {
 
 export async function createTask(formData: FormData) {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) throw new Error("Non authentifié")
+  const ownerId = await getEffectiveOwnerId()
 
   const { error } = await supabase.from("tasks").insert({
-    user_id: user.id,
+    user_id: ownerId,
     title: str(formData, "title") ?? "",
     description: str(formData, "description"),
     due_date: str(formData, "due_date"),

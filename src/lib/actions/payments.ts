@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
+import { getEffectiveOwnerId } from "@/lib/actions/team"
 import type { PaymentStatus } from "@/lib/supabase/types"
 
 function str(formData: FormData, key: string) {
@@ -17,10 +18,7 @@ function num(formData: FormData, key: string) {
 
 export async function createPayment(formData: FormData) {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) throw new Error("Non authentifié")
+  const ownerId = await getEffectiveOwnerId()
 
   const contractId = str(formData, "contract_id")
   if (!contractId) throw new Error("Contrat requis")
@@ -29,7 +27,7 @@ export async function createPayment(formData: FormData) {
   const paidDate = str(formData, "paid_date")
 
   const { error } = await supabase.from("contract_payments").insert({
-    user_id: user.id,
+    user_id: ownerId,
     contract_id: contractId,
     amount: num(formData, "amount"),
     due_date: str(formData, "due_date") ?? new Date().toISOString().slice(0, 10),

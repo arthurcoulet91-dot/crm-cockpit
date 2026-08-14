@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
+import { getEffectiveOwnerId } from "@/lib/actions/team"
 import type { OpportunityStage } from "@/lib/supabase/types"
 
 function str(formData: FormData, key: string) {
@@ -17,13 +18,10 @@ function num(formData: FormData, key: string) {
 
 export async function createOpportunity(formData: FormData) {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) throw new Error("Non authentifié")
+  const ownerId = await getEffectiveOwnerId()
 
   const { error } = await supabase.from("opportunities").insert({
-    user_id: user.id,
+    user_id: ownerId,
     client_id: str(formData, "client_id"),
     title: str(formData, "title") ?? "",
     amount: num(formData, "amount"),
