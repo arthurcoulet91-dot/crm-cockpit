@@ -1,0 +1,74 @@
+"use server"
+
+import { revalidatePath } from "next/cache"
+
+import { createClient } from "@/lib/supabase/server"
+import type { ContractRecurrence, ContractStatus } from "@/lib/supabase/types"
+
+function str(formData: FormData, key: string) {
+  const value = formData.get(key)
+  return typeof value === "string" && value.trim() !== "" ? value.trim() : null
+}
+
+function num(formData: FormData, key: string) {
+  const value = str(formData, key)
+  return value ? Number(value) : 0
+}
+
+export async function createContractRecord(formData: FormData) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) throw new Error("Non authentifié")
+
+  const clientId = str(formData, "client_id")
+  if (!clientId) throw new Error("Client requis")
+
+  const { error } = await supabase.from("contracts").insert({
+    user_id: user.id,
+    client_id: clientId,
+    title: str(formData, "title") ?? "",
+    amount: num(formData, "amount"),
+    status: (str(formData, "status") ?? "draft") as ContractStatus,
+    recurrence: (str(formData, "recurrence") ?? "one_off") as ContractRecurrence,
+    start_date: str(formData, "start_date"),
+    end_date: str(formData, "end_date"),
+    renewal_date: str(formData, "renewal_date"),
+    notes: str(formData, "notes"),
+  })
+
+  if (error) throw new Error(error.message)
+  revalidatePath("/contracts")
+  revalidatePath("/clients")
+}
+
+export async function updateContractRecord(id: string, formData: FormData) {
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from("contracts")
+    .update({
+      title: str(formData, "title") ?? "",
+      amount: num(formData, "amount"),
+      status: (str(formData, "status") ?? "draft") as ContractStatus,
+      recurrence: (str(formData, "recurrence") ?? "one_off") as ContractRecurrence,
+      start_date: str(formData, "start_date"),
+      end_date: str(formData, "end_date"),
+      renewal_date: str(formData, "renewal_date"),
+      notes: str(formData, "notes"),
+    })
+    .eq("id", id)
+
+  if (error) throw new Error(error.message)
+  revalidatePath("/contracts")
+  revalidatePath("/clients")
+}
+
+export async function deleteContractRecord(id: string) {
+  const supabase = await createClient()
+  const { error } = await supabase.from("contracts").delete().eq("id", id)
+  if (error) throw new Error(error.message)
+  revalidatePath("/contracts")
+  revalidatePath("/clients")
+}

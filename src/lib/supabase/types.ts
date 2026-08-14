@@ -45,6 +45,7 @@ export interface Database {
           name: string
         }
         Update: Partial<Database["public"]["Tables"]["clients"]["Row"]>
+        Relationships: []
       }
       contracts: {
         Row: {
@@ -68,6 +69,7 @@ export interface Database {
           title: string
         }
         Update: Partial<Database["public"]["Tables"]["contracts"]["Row"]>
+        Relationships: []
       }
       contract_payments: {
         Row: {
@@ -88,6 +90,7 @@ export interface Database {
           due_date: string
         }
         Update: Partial<Database["public"]["Tables"]["contract_payments"]["Row"]>
+        Relationships: []
       }
       opportunities: {
         Row: {
@@ -109,6 +112,7 @@ export interface Database {
           title: string
         }
         Update: Partial<Database["public"]["Tables"]["opportunities"]["Row"]>
+        Relationships: []
       }
       activities: {
         Row: {
@@ -126,6 +130,7 @@ export interface Database {
           content: string
         }
         Update: Partial<Database["public"]["Tables"]["activities"]["Row"]>
+        Relationships: []
       }
       tasks: {
         Row: {
@@ -146,6 +151,7 @@ export interface Database {
           title: string
         }
         Update: Partial<Database["public"]["Tables"]["tasks"]["Row"]>
+        Relationships: []
       }
       expenses: {
         Row: {
@@ -164,6 +170,7 @@ export interface Database {
           label: string
         }
         Update: Partial<Database["public"]["Tables"]["expenses"]["Row"]>
+        Relationships: []
       }
       calendar_events_cache: {
         Row: {
@@ -189,6 +196,7 @@ export interface Database {
         Update: Partial<
           Database["public"]["Tables"]["calendar_events_cache"]["Row"]
         >
+        Relationships: []
       }
       integration_connections: {
         Row: {
@@ -211,7 +219,10 @@ export interface Database {
         Update: Partial<
           Database["public"]["Tables"]["integration_connections"]["Row"]
         >
+        Relationships: []
       }
     }
+    Views: Record<string, never>
+    Functions: Record<string, never>
   }
 }
