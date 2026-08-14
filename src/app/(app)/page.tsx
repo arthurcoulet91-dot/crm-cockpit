@@ -17,6 +17,7 @@ import { createClient } from "@/lib/supabase/server"
 import { resolvePeriod, type PeriodKey } from "@/lib/period"
 import { formatCurrency, formatDate } from "@/lib/format"
 import { stageLabel } from "@/components/status-badge"
+import { fetchUpcomingGoogleEvents, getValidGoogleAccessToken } from "@/lib/google-calendar"
 import { cn } from "@/lib/utils"
 import type { OpportunityStage } from "@/lib/supabase/types"
 
@@ -121,6 +122,29 @@ export default async function DashboardPage() {
     ...t,
     isOverdue: Boolean(t.due_date && t.due_date < today),
   }))
+
+  let upcomingEvents: { id: string; title: string; when: string; location?: string }[] = []
+  try {
+    const accessToken = await getValidGoogleAccessToken()
+    if (accessToken) {
+      const events = await fetchUpcomingGoogleEvents(accessToken, 5)
+      upcomingEvents = events.map((e) => ({
+        id: e.id,
+        title: e.summary ?? "Événement",
+        when: e.start.dateTime
+          ? new Date(e.start.dateTime).toLocaleString("fr-FR", {
+              day: "numeric",
+              month: "short",
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : formatDate(e.start.date),
+        location: e.location,
+      }))
+    }
+  } catch {
+    // Google Agenda indisponible — la carte affichera l'état vide.
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-6">
@@ -311,11 +335,27 @@ export default async function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <EmptyState
-              icon={CalendarDays}
-              title="Google Agenda non connecté"
-              description="Connecte Google Agenda dans Réglages → Intégrations pour voir tes rendez-vous ici."
-            />
+            {upcomingEvents.length === 0 ? (
+              <EmptyState
+                icon={CalendarDays}
+                title="Aucun rendez-vous à venir"
+                description="Connecte Google Agenda dans Réglages → Intégrations pour voir tes rendez-vous ici."
+              />
+            ) : (
+              <ul className="divide-y">
+                {upcomingEvents.map((e) => (
+                  <li key={e.id} className="flex items-center justify-between py-2.5 text-sm">
+                    <div>
+                      <p className="font-medium">{e.title}</p>
+                      {e.location && (
+                        <p className="text-xs text-muted-foreground">{e.location}</p>
+                      )}
+                    </div>
+                    <span className="text-xs text-muted-foreground">{e.when}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </CardContent>
         </Card>
       </div>

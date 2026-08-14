@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils"
 export type AgendaItem = {
   id: string
   date: string
-  type: "task" | "renewal"
+  type: "task" | "renewal" | "meeting"
   title: string
   subtitle?: string | null
   href?: string
@@ -79,7 +79,12 @@ export function CalendarView({ items }: { items: AgendaItem[] }) {
               </h3>
               <div className="divide-y overflow-hidden rounded-xl border">
                 {dayItems.map((item) => {
-                  const Icon = item.type === "task" ? CheckSquare2 : RefreshCw
+                  const Icon =
+                    item.type === "task"
+                      ? CheckSquare2
+                      : item.type === "meeting"
+                        ? CalendarDays
+                        : RefreshCw
                   const content = (
                     <div className="flex items-center gap-3 bg-card px-4 py-3">
                       <div

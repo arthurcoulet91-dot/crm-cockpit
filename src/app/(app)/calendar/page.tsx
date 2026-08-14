@@ -1,6 +1,7 @@
 import { PageHeader } from "@/components/page-header"
 import { CalendarView, type AgendaItem } from "@/components/calendar/calendar-view"
 import { createClient } from "@/lib/supabase/server"
+import { fetchUpcomingGoogleEvents, getValidGoogleAccessToken } from "@/lib/google-calendar"
 
 export default async function CalendarPage() {
   const supabase = await createClient()
@@ -38,6 +39,25 @@ export default async function CalendarPage() {
     clients: { name: string } | null
   }[]
 
+  let googleItems: AgendaItem[] = []
+  try {
+    const accessToken = await getValidGoogleAccessToken()
+    if (accessToken) {
+      const events = await fetchUpcomingGoogleEvents(accessToken, 20)
+      googleItems = events
+        .filter((e) => e.start.date || e.start.dateTime)
+        .map((e) => ({
+          id: `gcal-${e.id}`,
+          date: (e.start.date ?? e.start.dateTime ?? "").slice(0, 10),
+          type: "meeting" as const,
+          title: e.summary ?? "Événement",
+          subtitle: e.location,
+        }))
+    }
+  } catch {
+    // Google Agenda indisponible — on affiche simplement le reste de l'agenda.
+  }
+
   const items: AgendaItem[] = [
     ...(tasksRes.data ?? []).map((t) => ({
       id: `task-${t.id}`,
@@ -54,6 +74,7 @@ export default async function CalendarPage() {
       subtitle: c.clients?.name,
       href: "/contracts",
     })),
+    ...googleItems,
   ].sort((a, b) => a.date.localeCompare(b.date))
 
   return (

@@ -47,7 +47,8 @@ create table clients (
   source record_source not null default 'manual',
   ghl_contact_id text,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  unique (user_id, ghl_contact_id)
 );
 
 create table contracts (
@@ -89,7 +90,8 @@ create table opportunities (
   ghl_opportunity_id text,
   notes text,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  unique (user_id, ghl_opportunity_id)
 );
 
 create table activities (
