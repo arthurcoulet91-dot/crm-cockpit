@@ -43,3 +43,10 @@ export function todayISO() {
 export function daysFromNowISO(days: number) {
   return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
 }
+
+export function formatRecurrence(months: number | null | undefined) {
+  if (!months) return "Ponctuel"
+  if (months === 1) return "Tous les mois"
+  if (months === 12) return "Tous les ans"
+  return `Tous les ${months} mois`
+}

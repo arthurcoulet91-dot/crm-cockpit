@@ -43,6 +43,9 @@ export function ContractFormSheet({
 }) {
   const [open, setOpen] = React.useState(false)
   const [pending, startTransition] = React.useTransition()
+  const [recurrenceMonths, setRecurrenceMonths] = React.useState(
+    contract?.recurrence_months ? String(contract.recurrence_months) : ""
+  )
   const isEdit = Boolean(contract)
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -143,18 +146,37 @@ export function ContractFormSheet({
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="recurrence">Récurrence</Label>
-            <Select name="recurrence" defaultValue={contract?.recurrence ?? "one_off"}>
-              <SelectTrigger id="recurrence" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="one_off">Ponctuel</SelectItem>
-                <SelectItem value="monthly">Mensuel</SelectItem>
-                <SelectItem value="quarterly">Trimestriel</SelectItem>
-                <SelectItem value="annual">Annuel</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label htmlFor="recurrence_months">Récurrence</Label>
+            <Input
+              id="recurrence_months"
+              name="recurrence_months"
+              type="number"
+              min="1"
+              step="1"
+              placeholder="Laisser vide si ponctuel"
+              value={recurrenceMonths}
+              onChange={(e) => setRecurrenceMonths(e.target.value)}
+            />
+            <div className="flex flex-wrap gap-1.5 pt-0.5">
+              {[
+                { label: "Ponctuel", value: "" },
+                { label: "Tous les mois", value: "1" },
+                { label: "Tous les 2 mois", value: "2" },
+                { label: "Tous les 3 mois", value: "3" },
+                { label: "Tous les 6 mois", value: "6" },
+                { label: "Tous les ans", value: "12" },
+              ].map((preset) => (
+                <button
+                  key={preset.label}
+                  type="button"
+                  onClick={() => setRecurrenceMonths(preset.value)}
+                  className="rounded-full border border-input px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground data-[active=true]:border-primary data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
+                  data-active={recurrenceMonths === preset.value}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1.5">

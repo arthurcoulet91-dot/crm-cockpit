@@ -18,7 +18,7 @@ import { EmptyState } from "@/components/empty-state"
 import { ContractStatusBadge } from "@/components/status-badge"
 import { ContractFormSheet } from "@/components/contracts/contract-form-sheet"
 import { DeleteConfirmButton } from "@/components/delete-confirm-button"
-import { formatCurrency, formatDate } from "@/lib/format"
+import { formatCurrency, formatDate, formatRecurrence } from "@/lib/format"
 import type { Database } from "@/lib/supabase/types"
 
 type ContractRow = Database["public"]["Tables"]["contracts"]["Row"] & {
@@ -73,6 +73,7 @@ export function ContractsTable({
                 <TableHead>Client</TableHead>
                 <TableHead>Statut</TableHead>
                 <TableHead>Montant</TableHead>
+                <TableHead>Récurrence</TableHead>
                 <TableHead>Renouvellement</TableHead>
                 <TableHead className="w-1"></TableHead>
               </TableRow>
@@ -98,6 +99,9 @@ export function ContractsTable({
                   </TableCell>
                   <TableCell className="tabular-nums">
                     {formatCurrency(contract.amount)}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {formatRecurrence(contract.recurrence_months)}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {formatDate(contract.renewal_date)}

@@ -10,6 +10,7 @@ import { ExpensesList } from "@/components/finances/expenses-list"
 import { createClient } from "@/lib/supabase/server"
 import { resolvePeriod, type PeriodKey } from "@/lib/period"
 import { formatCurrency } from "@/lib/format"
+import { isActiveInPeriod, totalExpensesForPeriod } from "@/lib/expenses"
 import type { PaymentStatus } from "@/lib/supabase/types"
 
 type PaymentWithContract = {
@@ -47,20 +48,21 @@ export default async function FinancesPage({
     supabase
       .from("expenses")
       .select("*")
-      .gte("date", period.start)
       .lte("date", period.end)
       .order("date", { ascending: false }),
     supabase.from("contracts").select("id, title, clients(name)").order("title"),
   ])
 
   const payments = (paymentsRes.data ?? []) as unknown as PaymentWithContract[]
-  const expenses = expensesRes.data ?? []
+  const expenses = (expensesRes.data ?? []).filter((e) =>
+    isActiveInPeriod(e, period.start, period.end)
+  )
   const contracts = (contractsRes.data ?? []) as unknown as ContractWithClient[]
 
   const revenue = payments
     .filter((p) => p.status === "paid")
     .reduce((sum, p) => sum + p.amount, 0)
-  const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0)
+  const totalExpenses = totalExpensesForPeriod(expenses, period.start, period.end)
   const profit = revenue - totalExpenses
 
   const contractOptions = contracts.map((c) => ({

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
 import { getEffectiveOwnerId } from "@/lib/actions/team"
-import type { ContractRecurrence, ContractStatus } from "@/lib/supabase/types"
+import type { ContractStatus } from "@/lib/supabase/types"
 
 function str(formData: FormData, key: string) {
   const value = formData.get(key)
@@ -14,6 +14,13 @@ function str(formData: FormData, key: string) {
 function num(formData: FormData, key: string) {
   const value = str(formData, key)
   return value ? Number(value) : 0
+}
+
+function recurrenceMonths(formData: FormData) {
+  const value = str(formData, "recurrence_months")
+  if (!value) return null
+  const n = Number(value)
+  return Number.isFinite(n) && n > 0 ? Math.round(n) : null
 }
 
 export async function createContractRecord(formData: FormData) {
@@ -29,7 +36,7 @@ export async function createContractRecord(formData: FormData) {
     title: str(formData, "title") ?? "",
     amount: num(formData, "amount"),
     status: (str(formData, "status") ?? "draft") as ContractStatus,
-    recurrence: (str(formData, "recurrence") ?? "one_off") as ContractRecurrence,
+    recurrence_months: recurrenceMonths(formData),
     start_date: str(formData, "start_date"),
     end_date: str(formData, "end_date"),
     renewal_date: str(formData, "renewal_date"),
@@ -50,7 +57,7 @@ export async function updateContractRecord(id: string, formData: FormData) {
       title: str(formData, "title") ?? "",
       amount: num(formData, "amount"),
       status: (str(formData, "status") ?? "draft") as ContractStatus,
-      recurrence: (str(formData, "recurrence") ?? "one_off") as ContractRecurrence,
+      recurrence_months: recurrenceMonths(formData),
       start_date: str(formData, "start_date"),
       end_date: str(formData, "end_date"),
       renewal_date: str(formData, "renewal_date"),

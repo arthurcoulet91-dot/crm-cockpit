@@ -18,6 +18,8 @@ import { createClient } from "@/lib/supabase/server"
 import { resolvePeriod, type PeriodKey } from "@/lib/period"
 import { formatCurrency, formatDate, todayISO, daysFromNowISO } from "@/lib/format"
 import { stageLabel } from "@/components/status-badge"
+import { RevenueTrendChart } from "@/components/dashboard/revenue-trend-chart"
+import { totalExpensesForPeriod } from "@/lib/expenses"
 import { fetchUpcomingGoogleEvents, getValidGoogleAccessToken } from "@/lib/google-calendar"
 import { cn } from "@/lib/utils"
 import type { OpportunityStage } from "@/lib/supabase/types"
@@ -63,11 +65,7 @@ export default async function DashboardPage() {
       .eq("status", "paid")
       .gte("paid_date", lastMonth.start)
       .lte("paid_date", lastMonth.end),
-    supabase
-      .from("expenses")
-      .select("amount")
-      .gte("date", thisMonth.start)
-      .lte("date", thisMonth.end),
+    supabase.from("expenses").select("amount, date, frequency").lte("date", thisMonth.end),
     supabase.from("contracts").select("id", { count: "exact", head: true }).eq("status", "active"),
     supabase
       .from("contracts")
@@ -98,7 +96,11 @@ export default async function DashboardPage() {
 
   const revenue = (thisMonthPaymentsRes.data ?? []).reduce((s, p) => s + p.amount, 0)
   const lastRevenue = (lastMonthPaymentsRes.data ?? []).reduce((s, p) => s + p.amount, 0)
-  const expenses = (thisMonthExpensesRes.data ?? []).reduce((s, e) => s + e.amount, 0)
+  const expenses = totalExpensesForPeriod(
+    thisMonthExpensesRes.data ?? [],
+    thisMonth.start,
+    thisMonth.end
+  )
   const profit = revenue - expenses
 
   const revenueDelta = lastRevenue === 0 ? null : ((revenue - lastRevenue) / lastRevenue) * 100
@@ -248,6 +250,18 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-1.5 text-sm">
+            <TrendingUp className="size-4" />
+            Évolution du CA
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <RevenueTrendChart />
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>

@@ -5,7 +5,6 @@
 export type ClientType = "pro" | "particulier"
 export type RecordSource = "manual" | "ghl"
 export type ContractStatus = "draft" | "active" | "completed" | "cancelled"
-export type ContractRecurrence = "one_off" | "monthly" | "quarterly" | "annual"
 export type PaymentStatus = "pending" | "paid" | "overdue"
 export type OpportunityStage =
   | "proposal_sent"
@@ -58,7 +57,7 @@ export interface Database {
           start_date: string | null
           end_date: string | null
           renewal_date: string | null
-          recurrence: ContractRecurrence
+          recurrence_months: number | null
           notes: string | null
           created_at: string
           updated_at: string

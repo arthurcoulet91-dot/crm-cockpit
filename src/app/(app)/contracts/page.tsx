@@ -1,6 +1,8 @@
 import { PageHeader } from "@/components/page-header"
 import { ContractFormSheet } from "@/components/contracts/contract-form-sheet"
 import { ContractsTable } from "@/components/contracts/contracts-table"
+import { ExportCsvButton } from "@/components/export-csv-button"
+import { exportContractsCSV } from "@/lib/actions/export"
 import { createClient } from "@/lib/supabase/server"
 import type { Database } from "@/lib/supabase/types"
 
@@ -24,7 +26,12 @@ export default async function ContractsPage() {
       <PageHeader
         title="Contrats"
         description="Tous les contrats en cours, à venir et terminés."
-        actions={<ContractFormSheet clients={clients ?? []} />}
+        actions={
+          <>
+            <ExportCsvButton action={exportContractsCSV} filename="contrats.csv" />
+            <ContractFormSheet clients={clients ?? []} />
+          </>
+        }
       />
       <ContractsTable contracts={contracts} clients={clients ?? []} />
     </div>
