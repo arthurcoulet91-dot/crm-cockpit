@@ -5,6 +5,7 @@ import { toast } from "sonner"
 import { Loader2, Plus } from "lucide-react"
 
 import { createContractRecord, updateContractRecord } from "@/lib/actions/contracts"
+import { QuickAddClientDialog } from "@/components/clients/quick-add-client-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -63,7 +64,15 @@ export function ContractFormSheet({
   )
   const [startDate, setStartDate] = React.useState(contract?.start_date ?? "")
   const [endDate, setEndDate] = React.useState(contract?.end_date ?? "")
+  const [localClients, setLocalClients] = React.useState(clients ?? [])
+  const [syncedClients, setSyncedClients] = React.useState(clients)
+  const [selectedClientId, setSelectedClientId] = React.useState(contract?.client_id ?? "")
   const isEdit = Boolean(contract)
+
+  if (clients !== syncedClients) {
+    setSyncedClients(clients)
+    setLocalClients(clients ?? [])
+  }
 
   function handleStartDateChange(value: string) {
     setStartDate(value)
@@ -126,18 +135,30 @@ export function ContractFormSheet({
           {!fixedClientId && clients && (
             <div className="space-y-1.5">
               <Label htmlFor="client_id">Client</Label>
-              <Select name="client_id" defaultValue={contract?.client_id}>
-                <SelectTrigger id="client_id" className="w-full">
-                  <SelectValue placeholder="Choisir un client" />
-                </SelectTrigger>
-                <SelectContent>
-                  {clients.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex gap-2">
+                <Select
+                  name="client_id"
+                  value={selectedClientId}
+                  onValueChange={(v) => setSelectedClientId(v ?? "")}
+                >
+                  <SelectTrigger id="client_id" className="w-full">
+                    <SelectValue placeholder="Choisir un client" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {localClients.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <QuickAddClientDialog
+                  onCreated={(client) => {
+                    setLocalClients((prev) => [...prev, client])
+                    setSelectedClientId(client.id)
+                  }}
+                />
+              </div>
             </div>
           )}
           <div className="space-y-1.5">

@@ -30,6 +30,30 @@ export async function createClientRecord(formData: FormData) {
   revalidatePath("/clients")
 }
 
+export async function createQuickClient(formData: FormData): Promise<{ id: string; name: string }> {
+  const supabase = await createClient()
+  const ownerId = await getEffectiveOwnerId()
+
+  const name = str(formData, "name")
+  if (!name) throw new Error("Nom requis")
+
+  const { data, error } = await supabase
+    .from("clients")
+    .insert({
+      user_id: ownerId,
+      name,
+      type: (str(formData, "type") ?? "particulier") as ClientType,
+      email: str(formData, "email"),
+      phone: str(formData, "phone"),
+    })
+    .select("id, name")
+    .single()
+
+  if (error) throw new Error(error.message)
+  revalidatePath("/clients")
+  return data
+}
+
 export async function updateClientRecord(id: string, formData: FormData) {
   const supabase = await createClient()
 
