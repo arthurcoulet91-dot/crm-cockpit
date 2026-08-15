@@ -74,7 +74,8 @@ export interface Database {
         Row: {
           id: string
           user_id: string
-          contract_id: string
+          contract_id: string | null
+          label: string | null
           amount: number
           due_date: string
           paid_date: string | null
@@ -85,7 +86,6 @@ export interface Database {
           Database["public"]["Tables"]["contract_payments"]["Row"]
         > & {
           user_id: string
-          contract_id: string
           due_date: string
         }
         Update: Partial<Database["public"]["Tables"]["contract_payments"]["Row"]>

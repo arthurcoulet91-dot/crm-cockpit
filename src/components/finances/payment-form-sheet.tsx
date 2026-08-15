@@ -26,6 +26,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 
+const NO_CONTRACT = "__none__"
+
 export function PaymentFormSheet({
   contracts,
 }: {
@@ -33,15 +35,20 @@ export function PaymentFormSheet({
 }) {
   const [open, setOpen] = React.useState(false)
   const [pending, startTransition] = React.useTransition()
+  const [contractId, setContractId] = React.useState(NO_CONTRACT)
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
+    if (contractId === NO_CONTRACT) {
+      formData.delete("contract_id")
+    }
     startTransition(async () => {
       try {
         await createPayment(formData)
         toast.success("Paiement ajouté")
         setOpen(false)
+        setContractId(NO_CONTRACT)
       } catch (err) {
         toast.error(err instanceof Error ? err.message : "Une erreur est survenue")
       }
@@ -58,7 +65,7 @@ export function PaymentFormSheet({
         <SheetHeader>
           <SheetTitle>Nouveau paiement</SheetTitle>
           <SheetDescription>
-            Enregistre une échéance de paiement pour un contrat.
+            Lié à un contrat, ou ponctuel si tu n&apos;en as pas.
           </SheetDescription>
         </SheetHeader>
         <form
@@ -68,11 +75,16 @@ export function PaymentFormSheet({
         >
           <div className="space-y-1.5">
             <Label htmlFor="contract_id">Contrat</Label>
-            <Select name="contract_id" required>
+            <Select
+              name="contract_id"
+              value={contractId}
+              onValueChange={(v) => setContractId(v ?? NO_CONTRACT)}
+            >
               <SelectTrigger id="contract_id" className="w-full">
-                <SelectValue placeholder="Choisir un contrat" />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value={NO_CONTRACT}>Aucun — paiement ponctuel</SelectItem>
                 {contracts.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
                     {c.title} {c.client_name ? `— ${c.client_name}` : ""}
@@ -81,6 +93,17 @@ export function PaymentFormSheet({
               </SelectContent>
             </Select>
           </div>
+          {contractId === NO_CONTRACT && (
+            <div className="space-y-1.5">
+              <Label htmlFor="label">Description</Label>
+              <Input
+                id="label"
+                name="label"
+                required
+                placeholder="Ex : Prestation ponctuelle, acompte…"
+              />
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="amount">Montant (€)</Label>

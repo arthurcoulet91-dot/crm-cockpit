@@ -19,6 +19,7 @@ type PaymentWithContract = {
   due_date: string
   paid_date: string | null
   status: PaymentStatus
+  label: string | null
   contracts: { title: string; clients: { name: string } | null } | null
 }
 

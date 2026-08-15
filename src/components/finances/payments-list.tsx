@@ -18,6 +18,7 @@ type Payment = {
   due_date: string
   paid_date: string | null
   status: PaymentStatus
+  label: string | null
   contracts: { title: string; clients: { name: string } | null } | null
 }
 
@@ -56,10 +57,11 @@ export function PaymentsList({ payments }: { payments: Payment[] }) {
         <div key={p.id} className="group flex items-center gap-3 bg-card px-4 py-3">
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium">
-              {p.contracts?.title ?? "Contrat supprimé"}
+              {p.contracts?.title ?? p.label ?? "Paiement ponctuel"}
             </p>
             <p className="text-xs text-muted-foreground">
-              {p.contracts?.clients?.name} · Échéance {formatDate(p.due_date)}
+              {p.contracts ? p.contracts.clients?.name ?? " " : "Ponctuel"} · Échéance{" "}
+              {formatDate(p.due_date)}
               {p.paid_date && ` · Payé le ${formatDate(p.paid_date)}`}
             </p>
           </div>
