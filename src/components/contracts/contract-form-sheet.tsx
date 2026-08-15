@@ -30,23 +30,47 @@ import type { Database } from "@/lib/supabase/types"
 
 type ContractRow = Database["public"]["Tables"]["contracts"]["Row"]
 
+function addOneYear(dateStr: string) {
+  const d = new Date(dateStr)
+  if (Number.isNaN(d.getTime())) return ""
+  d.setFullYear(d.getFullYear() + 1)
+  return d.toISOString().slice(0, 10)
+}
+
 export function ContractFormSheet({
   contract,
   clients,
   fixedClientId,
   variant = "default",
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
 }: {
   contract?: ContractRow
   clients?: { id: string; name: string }[]
   fixedClientId?: string
   variant?: "default" | "edit-icon"
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }) {
-  const [open, setOpen] = React.useState(false)
+  const [internalOpen, setInternalOpen] = React.useState(false)
+  const isControlled = controlledOpen !== undefined
+  const open = isControlled ? controlledOpen : internalOpen
+  const setOpen = isControlled ? controlledOnOpenChange ?? (() => {}) : setInternalOpen
+
   const [pending, startTransition] = React.useTransition()
   const [recurrenceMonths, setRecurrenceMonths] = React.useState(
     contract?.recurrence_months ? String(contract.recurrence_months) : ""
   )
+  const [startDate, setStartDate] = React.useState(contract?.start_date ?? "")
+  const [endDate, setEndDate] = React.useState(contract?.end_date ?? "")
   const isEdit = Boolean(contract)
+
+  function handleStartDateChange(value: string) {
+    setStartDate(value)
+    if (!endDate) {
+      setEndDate(addOneYear(value))
+    }
+  }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -71,18 +95,20 @@ export function ContractFormSheet({
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger
-        render={
-          variant === "edit-icon" ? (
-            <Button variant="ghost" size="icon-sm" aria-label="Modifier" />
-          ) : (
-            <Button size="sm" />
-          )
-        }
-      >
-        {variant === "default" && <Plus />}
-        {variant === "default" ? "Nouveau contrat" : "Modifier"}
-      </SheetTrigger>
+      {!isControlled && (
+        <SheetTrigger
+          render={
+            variant === "edit-icon" ? (
+              <Button variant="ghost" size="icon-sm" aria-label="Modifier" />
+            ) : (
+              <Button size="sm" />
+            )
+          }
+        >
+          {variant === "default" && <Plus />}
+          {variant === "default" ? "Nouveau contrat" : "Modifier"}
+        </SheetTrigger>
+      )}
       <SheetContent className="flex flex-col">
         <SheetHeader>
           <SheetTitle>{isEdit ? "Modifier le contrat" : "Nouveau contrat"}</SheetTitle>
@@ -185,7 +211,8 @@ export function ContractFormSheet({
                 id="start_date"
                 name="start_date"
                 type="date"
-                defaultValue={contract?.start_date ?? ""}
+                value={startDate}
+                onChange={(e) => handleStartDateChange(e.target.value)}
               />
             </div>
             <div className="space-y-1.5">
@@ -194,8 +221,10 @@ export function ContractFormSheet({
                 id="end_date"
                 name="end_date"
                 type="date"
-                defaultValue={contract?.end_date ?? ""}
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
               />
+              <p className="text-xs text-muted-foreground">Engagement 1 an par défaut</p>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="renewal_date">Renouvellement</Label>

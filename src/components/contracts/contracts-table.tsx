@@ -33,6 +33,7 @@ export function ContractsTable({
   clients: { id: string; name: string }[]
 }) {
   const [query, setQuery] = React.useState("")
+  const [editingContract, setEditingContract] = React.useState<ContractRow | null>(null)
 
   const filtered = contracts.filter((c) => {
     const q = query.toLowerCase()
@@ -80,12 +81,17 @@ export function ContractsTable({
             </TableHeader>
             <TableBody>
               {filtered.map((contract) => (
-                <TableRow key={contract.id} className="group">
+                <TableRow
+                  key={contract.id}
+                  className="group cursor-pointer"
+                  onClick={() => setEditingContract(contract)}
+                >
                   <TableCell className="font-medium">{contract.title}</TableCell>
                   <TableCell>
                     {contract.clients ? (
                       <Link
                         href={`/clients/${contract.clients.id}`}
+                        onClick={(e) => e.stopPropagation()}
                         className="text-muted-foreground hover:text-foreground hover:underline"
                       >
                         {contract.clients.name}
@@ -106,13 +112,8 @@ export function ContractsTable({
                   <TableCell className="text-muted-foreground">
                     {formatDate(contract.renewal_date)}
                   </TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                      <ContractFormSheet
-                        contract={contract}
-                        clients={clients}
-                        variant="edit-icon"
-                      />
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center justify-end opacity-0 transition-opacity group-hover:opacity-100">
                       <DeleteConfirmButton
                         itemLabel={contract.title}
                         onDelete={() => deleteContractRecord(contract.id)}
@@ -124,6 +125,17 @@ export function ContractsTable({
             </TableBody>
           </Table>
         </div>
+      )}
+
+      {editingContract && (
+        <ContractFormSheet
+          contract={editingContract}
+          clients={clients}
+          open={Boolean(editingContract)}
+          onOpenChange={(next) => {
+            if (!next) setEditingContract(null)
+          }}
+        />
       )}
     </div>
   )
