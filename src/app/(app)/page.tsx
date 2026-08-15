@@ -8,6 +8,7 @@ import {
   CalendarDays,
   Minus,
 } from "lucide-react"
+import { startOfYear, endOfYear, format } from "date-fns"
 
 import { PageHeader } from "@/components/page-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -36,12 +37,16 @@ export default async function DashboardPage() {
   const lastMonth = resolvePeriod("last_month" satisfies PeriodKey)
   const today = todayISO()
   const in60Days = daysFromNowISO(60)
+  const now = new Date()
+  const yearStart = format(startOfYear(now), "yyyy-MM-dd")
+  const yearEnd = format(endOfYear(now), "yyyy-MM-dd")
 
   const [
     thisMonthPaymentsRes,
     lastMonthPaymentsRes,
     thisMonthExpensesRes,
     activeContractsRes,
+    yearContractsRes,
     renewalsRes,
     opportunitiesRes,
     tasksRes,
@@ -64,6 +69,11 @@ export default async function DashboardPage() {
       .gte("date", thisMonth.start)
       .lte("date", thisMonth.end),
     supabase.from("contracts").select("id", { count: "exact", head: true }).eq("status", "active"),
+    supabase
+      .from("contracts")
+      .select("amount")
+      .gte("start_date", yearStart)
+      .lte("start_date", yearEnd),
     supabase
       .from("contracts")
       .select("id, title, renewal_date, clients(name)")
@@ -94,6 +104,9 @@ export default async function DashboardPage() {
   const revenueDelta = lastRevenue === 0 ? null : ((revenue - lastRevenue) / lastRevenue) * 100
 
   const activeContracts = activeContractsRes.count ?? 0
+  const yearContracts = yearContractsRes.data ?? []
+  const yearContractsCount = yearContracts.length
+  const yearContractsTotal = yearContracts.reduce((s, c) => s + c.amount, 0)
 
   const renewals = (renewalsRes.data ?? []) as unknown as {
     id: string
@@ -223,15 +236,15 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase">
-              <RefreshCw className="size-3.5" />
-              Renouvellements &lt; 60j
+              <FileText className="size-3.5" />
+              Contrats {now.getFullYear()}
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-semibold tabular-nums">{renewals.length}</p>
-            <Link href="/contracts" className="text-xs text-muted-foreground hover:text-foreground">
-              Voir les contrats →
-            </Link>
+          <CardContent className="space-y-1">
+            <p className="text-2xl font-semibold tabular-nums">{yearContractsCount}</p>
+            <p className="text-xs text-muted-foreground">
+              {formatCurrency(yearContractsTotal)} au total
+            </p>
           </CardContent>
         </Card>
       </div>
