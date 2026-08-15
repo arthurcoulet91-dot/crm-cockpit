@@ -137,12 +137,18 @@ export function ContractFormSheet({
               <Label htmlFor="client_id">Client</Label>
               <div className="flex gap-2">
                 <Select
+                  key={localClients.map((c) => c.id).join(",")}
                   name="client_id"
                   value={selectedClientId}
                   onValueChange={(v) => setSelectedClientId(v ?? "")}
                 >
                   <SelectTrigger id="client_id" className="w-full">
-                    <SelectValue placeholder="Choisir un client" />
+                    <SelectValue placeholder="Choisir un client">
+                      {(value: string | null) =>
+                        localClients.find((c) => c.id === value)?.name ??
+                        "Choisir un client"
+                      }
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {localClients.map((c) => (

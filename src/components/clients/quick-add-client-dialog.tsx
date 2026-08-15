@@ -36,6 +36,9 @@ export function QuickAddClientDialog({
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    // Dialog is a portal but still bubbles as a React synthetic event through
+    // the component tree — stop it so it doesn't also submit the contract form.
+    e.stopPropagation()
     const formData = new FormData(e.currentTarget)
     startTransition(async () => {
       try {
