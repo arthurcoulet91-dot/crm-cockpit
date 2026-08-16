@@ -19,6 +19,7 @@ type Payment = {
   paid_date: string | null
   status: PaymentStatus
   label: string | null
+  contracts: { title: string; clients: { name: string } | null } | null
 }
 
 const statusClasses: Record<PaymentStatus, string> = {
@@ -38,8 +39,8 @@ export function PaymentsList({ payments }: { payments: Payment[] }) {
     return (
       <EmptyState
         icon={Wallet}
-        title="Aucun paiement ponctuel sur cette période"
-        description="Ajoute une rentrée d'argent qui n'est pas liée à un contrat."
+        title="Aucun paiement sur cette période"
+        description="Ajoute un paiement pour suivre ton chiffre d'affaires encaissé."
       />
     )
   }
@@ -56,10 +57,11 @@ export function PaymentsList({ payments }: { payments: Payment[] }) {
         <div key={p.id} className="group flex items-center gap-3 bg-card px-4 py-3">
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium">
-              {p.label ?? "Paiement ponctuel"}
+              {p.contracts?.title ?? p.label ?? "Paiement ponctuel"}
             </p>
             <p className="text-xs text-muted-foreground">
-              Échéance {formatDate(p.due_date)}
+              {p.contracts ? p.contracts.clients?.name ?? " " : "Ponctuel"} · Échéance{" "}
+              {formatDate(p.due_date)}
               {p.paid_date && ` · Payé le ${formatDate(p.paid_date)}`}
             </p>
           </div>

@@ -45,32 +45,32 @@ export default async function DashboardPage() {
   const yearEnd = format(endOfYear(now), "yyyy-MM-dd")
 
   const [
-    allContractsRes,
-    thisMonthStandaloneRes,
-    lastMonthStandaloneRes,
+    thisMonthPaymentsRes,
+    lastMonthPaymentsRes,
     thisMonthExpensesRes,
+    activeContractsRes,
+    yearContractsRes,
     renewalsRes,
     opportunitiesRes,
     tasksRes,
   ] = await Promise.all([
     supabase
-      .from("contracts")
-      .select("id, title, amount, start_date, recurrence_months, status"),
-    supabase
       .from("contract_payments")
       .select("amount")
-      .is("contract_id", null)
       .eq("status", "paid")
       .gte("paid_date", thisMonth.start)
       .lte("paid_date", thisMonth.end),
     supabase
       .from("contract_payments")
       .select("amount")
-      .is("contract_id", null)
       .eq("status", "paid")
       .gte("paid_date", lastMonth.start)
       .lte("paid_date", lastMonth.end),
     supabase.from("expenses").select("amount, date, frequency").lte("date", thisMonth.end),
+    supabase.from("contracts").select("id", { count: "exact", head: true }).eq("status", "active"),
+    supabase
+      .from("contracts")
+      .select("id, title, amount, start_date, recurrence_months, status"),
     supabase
       .from("contracts")
       .select("id, title, renewal_date, clients(name)")
@@ -93,22 +93,8 @@ export default async function DashboardPage() {
       .limit(8),
   ])
 
-  const allContracts = (allContractsRes.data ?? []) as RevenueContract[]
-
-  const thisMonthStandalone = (thisMonthStandaloneRes.data ?? []).reduce(
-    (s, p) => s + p.amount,
-    0
-  )
-  const lastMonthStandalone = (lastMonthStandaloneRes.data ?? []).reduce(
-    (s, p) => s + p.amount,
-    0
-  )
-  const revenue =
-    contractRevenueForPeriod(allContracts, thisMonth.start, thisMonth.end).total +
-    thisMonthStandalone
-  const lastRevenue =
-    contractRevenueForPeriod(allContracts, lastMonth.start, lastMonth.end).total +
-    lastMonthStandalone
+  const revenue = (thisMonthPaymentsRes.data ?? []).reduce((s, p) => s + p.amount, 0)
+  const lastRevenue = (lastMonthPaymentsRes.data ?? []).reduce((s, p) => s + p.amount, 0)
   const expenses = totalExpensesForPeriod(
     thisMonthExpensesRes.data ?? [],
     thisMonth.start,
@@ -118,12 +104,11 @@ export default async function DashboardPage() {
 
   const revenueDelta = lastRevenue === 0 ? null : ((revenue - lastRevenue) / lastRevenue) * 100
 
-  const activeContracts = allContracts.filter((c) => c.status === "active").length
-  const yearContracts = allContracts.filter(
-    (c) => c.start_date && c.start_date >= yearStart && c.start_date <= yearEnd
-  )
-  const yearContractsCount = yearContracts.length
-  const yearContractsTotal = yearContracts.reduce((s, c) => s + c.amount, 0)
+  const activeContracts = activeContractsRes.count ?? 0
+  const allContractsForYear = (yearContractsRes.data ?? []) as RevenueContract[]
+  const { total: yearContractsTotal, breakdown: yearContractsBreakdown } =
+    contractRevenueForPeriod(allContractsForYear, yearStart, yearEnd)
+  const yearContractsCount = yearContractsBreakdown.length
 
   const renewals = (renewalsRes.data ?? []) as unknown as {
     id: string
@@ -260,7 +245,7 @@ export default async function DashboardPage() {
           <CardContent className="space-y-1">
             <p className="text-2xl font-semibold tabular-nums">{yearContractsCount}</p>
             <p className="text-xs text-muted-foreground">
-              {formatCurrency(yearContractsTotal)} au total
+              {formatCurrency(yearContractsTotal)} récurrent annualisé
             </p>
           </CardContent>
         </Card>

@@ -20,16 +20,22 @@ export async function createPayment(formData: FormData) {
   const supabase = await createClient()
   const ownerId = await getEffectiveOwnerId()
 
+  const contractId = str(formData, "contract_id")
   const label = str(formData, "label")
-  if (!label) throw new Error("Description requise")
+  if (!contractId && !label) {
+    throw new Error("Choisis un contrat ou décris ce paiement ponctuel")
+  }
+  if (contractId && label) {
+    throw new Error("Choisis soit un contrat, soit une description ponctuelle — pas les deux")
+  }
 
   const status = (str(formData, "status") ?? "pending") as PaymentStatus
   const paidDate = str(formData, "paid_date")
 
   const { error } = await supabase.from("contract_payments").insert({
     user_id: ownerId,
-    contract_id: null,
-    label,
+    contract_id: contractId,
+    label: contractId ? null : label,
     amount: num(formData, "amount"),
     due_date: str(formData, "due_date") ?? new Date().toISOString().slice(0, 10),
     status,
