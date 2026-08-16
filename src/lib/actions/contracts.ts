@@ -29,6 +29,8 @@ export async function createContractRecord(formData: FormData) {
 
   const clientId = str(formData, "client_id")
   if (!clientId) throw new Error("Client requis")
+  const startDate = str(formData, "start_date")
+  if (!startDate) throw new Error("Date de début requise")
 
   const { error } = await supabase.from("contracts").insert({
     user_id: ownerId,
@@ -37,7 +39,7 @@ export async function createContractRecord(formData: FormData) {
     amount: num(formData, "amount"),
     status: (str(formData, "status") ?? "draft") as ContractStatus,
     recurrence_months: recurrenceMonths(formData),
-    start_date: str(formData, "start_date"),
+    start_date: startDate,
     end_date: str(formData, "end_date"),
     renewal_date: str(formData, "renewal_date"),
     notes: str(formData, "notes"),
@@ -51,6 +53,9 @@ export async function createContractRecord(formData: FormData) {
 export async function updateContractRecord(id: string, formData: FormData) {
   const supabase = await createClient()
 
+  const startDate = str(formData, "start_date")
+  if (!startDate) throw new Error("Date de début requise")
+
   const { error } = await supabase
     .from("contracts")
     .update({
@@ -58,7 +63,7 @@ export async function updateContractRecord(id: string, formData: FormData) {
       amount: num(formData, "amount"),
       status: (str(formData, "status") ?? "draft") as ContractStatus,
       recurrence_months: recurrenceMonths(formData),
-      start_date: str(formData, "start_date"),
+      start_date: startDate,
       end_date: str(formData, "end_date"),
       renewal_date: str(formData, "renewal_date"),
       notes: str(formData, "notes"),

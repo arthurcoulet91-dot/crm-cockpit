@@ -272,6 +272,7 @@ export function ContractFormSheet({
                 id="start_date"
                 name="start_date"
                 type="date"
+                required
                 value={startDate}
                 onChange={(e) => handleStartDateChange(e.target.value)}
               />
