@@ -31,6 +31,9 @@ import type { Database } from "@/lib/supabase/types"
 
 type ContractRow = Database["public"]["Tables"]["contracts"]["Row"]
 
+const titlePresets = ["Nettoyage vitres", "Nettoyage vitres et volets"]
+const CUSTOM_TITLE = "__custom__"
+
 function addOneYear(dateStr: string) {
   const d = new Date(dateStr)
   if (Number.isNaN(d.getTime())) return ""
@@ -67,6 +70,13 @@ export function ContractFormSheet({
   const [localClients, setLocalClients] = React.useState(clients ?? [])
   const [syncedClients, setSyncedClients] = React.useState(clients)
   const [selectedClientId, setSelectedClientId] = React.useState(contract?.client_id ?? "")
+  const [titlePreset, setTitlePreset] = React.useState(() => {
+    if (!contract?.title) return titlePresets[0]
+    return titlePresets.includes(contract.title) ? contract.title : CUSTOM_TITLE
+  })
+  const [customTitle, setCustomTitle] = React.useState(
+    contract?.title && !titlePresets.includes(contract.title) ? contract.title : ""
+  )
   const isEdit = Boolean(contract)
 
   if (clients !== syncedClients) {
@@ -168,8 +178,32 @@ export function ContractFormSheet({
             </div>
           )}
           <div className="space-y-1.5">
-            <Label htmlFor="title">Titre</Label>
-            <Input id="title" name="title" required defaultValue={contract?.title} />
+            <Label htmlFor="title_preset">Titre</Label>
+            <Select value={titlePreset} onValueChange={(v) => setTitlePreset(v ?? titlePresets[0])}>
+              <SelectTrigger id="title_preset" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {titlePresets.map((preset) => (
+                  <SelectItem key={preset} value={preset}>
+                    {preset}
+                  </SelectItem>
+                ))}
+                <SelectItem value={CUSTOM_TITLE}>Autre…</SelectItem>
+              </SelectContent>
+            </Select>
+            {titlePreset === CUSTOM_TITLE ? (
+              <Input
+                name="title"
+                required
+                placeholder="Titre du contrat"
+                value={customTitle}
+                onChange={(e) => setCustomTitle(e.target.value)}
+                className="mt-1.5"
+              />
+            ) : (
+              <input type="hidden" name="title" value={titlePreset} />
+            )}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">

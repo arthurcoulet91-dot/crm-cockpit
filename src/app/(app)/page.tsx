@@ -20,6 +20,7 @@ import { formatCurrency, formatDate, todayISO, daysFromNowISO } from "@/lib/form
 import { stageLabel } from "@/components/status-badge"
 import { RevenueTrendChart } from "@/components/dashboard/revenue-trend-chart"
 import { totalExpensesForPeriod } from "@/lib/expenses"
+import { contractRevenueForPeriod, type RevenueContract } from "@/lib/revenue"
 import { fetchUpcomingGoogleEvents, getValidGoogleAccessToken } from "@/lib/google-calendar"
 import { cn } from "@/lib/utils"
 import type { OpportunityStage } from "@/lib/supabase/types"
@@ -44,34 +45,32 @@ export default async function DashboardPage() {
   const yearEnd = format(endOfYear(now), "yyyy-MM-dd")
 
   const [
-    thisMonthPaymentsRes,
-    lastMonthPaymentsRes,
+    allContractsRes,
+    thisMonthStandaloneRes,
+    lastMonthStandaloneRes,
     thisMonthExpensesRes,
-    activeContractsRes,
-    yearContractsRes,
     renewalsRes,
     opportunitiesRes,
     tasksRes,
   ] = await Promise.all([
     supabase
+      .from("contracts")
+      .select("id, title, amount, start_date, recurrence_months, status"),
+    supabase
       .from("contract_payments")
       .select("amount")
+      .is("contract_id", null)
       .eq("status", "paid")
       .gte("paid_date", thisMonth.start)
       .lte("paid_date", thisMonth.end),
     supabase
       .from("contract_payments")
       .select("amount")
+      .is("contract_id", null)
       .eq("status", "paid")
       .gte("paid_date", lastMonth.start)
       .lte("paid_date", lastMonth.end),
     supabase.from("expenses").select("amount, date, frequency").lte("date", thisMonth.end),
-    supabase.from("contracts").select("id", { count: "exact", head: true }).eq("status", "active"),
-    supabase
-      .from("contracts")
-      .select("amount")
-      .gte("start_date", yearStart)
-      .lte("start_date", yearEnd),
     supabase
       .from("contracts")
       .select("id, title, renewal_date, clients(name)")
@@ -94,8 +93,22 @@ export default async function DashboardPage() {
       .limit(8),
   ])
 
-  const revenue = (thisMonthPaymentsRes.data ?? []).reduce((s, p) => s + p.amount, 0)
-  const lastRevenue = (lastMonthPaymentsRes.data ?? []).reduce((s, p) => s + p.amount, 0)
+  const allContracts = (allContractsRes.data ?? []) as RevenueContract[]
+
+  const thisMonthStandalone = (thisMonthStandaloneRes.data ?? []).reduce(
+    (s, p) => s + p.amount,
+    0
+  )
+  const lastMonthStandalone = (lastMonthStandaloneRes.data ?? []).reduce(
+    (s, p) => s + p.amount,
+    0
+  )
+  const revenue =
+    contractRevenueForPeriod(allContracts, thisMonth.start, thisMonth.end).total +
+    thisMonthStandalone
+  const lastRevenue =
+    contractRevenueForPeriod(allContracts, lastMonth.start, lastMonth.end).total +
+    lastMonthStandalone
   const expenses = totalExpensesForPeriod(
     thisMonthExpensesRes.data ?? [],
     thisMonth.start,
@@ -105,8 +118,10 @@ export default async function DashboardPage() {
 
   const revenueDelta = lastRevenue === 0 ? null : ((revenue - lastRevenue) / lastRevenue) * 100
 
-  const activeContracts = activeContractsRes.count ?? 0
-  const yearContracts = yearContractsRes.data ?? []
+  const activeContracts = allContracts.filter((c) => c.status === "active").length
+  const yearContracts = allContracts.filter(
+    (c) => c.start_date && c.start_date >= yearStart && c.start_date <= yearEnd
+  )
   const yearContractsCount = yearContracts.length
   const yearContractsTotal = yearContracts.reduce((s, c) => s + c.amount, 0)
 

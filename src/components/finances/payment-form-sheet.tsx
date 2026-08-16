@@ -8,7 +8,6 @@ import { createPayment } from "@/lib/actions/payments"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { cn } from "@/lib/utils"
 import {
   Select,
   SelectContent,
@@ -27,31 +26,18 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 
-type PaymentKind = "contract" | "standalone"
-
-export function PaymentFormSheet({
-  contracts,
-}: {
-  contracts: { id: string; title: string; client_name: string | null }[]
-}) {
+export function PaymentFormSheet() {
   const [open, setOpen] = React.useState(false)
   const [pending, startTransition] = React.useTransition()
-  const [kind, setKind] = React.useState<PaymentKind>("contract")
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
-    if (kind === "standalone") {
-      formData.delete("contract_id")
-    } else {
-      formData.delete("label")
-    }
     startTransition(async () => {
       try {
         await createPayment(formData)
         toast.success("Paiement ajouté")
         setOpen(false)
-        setKind("contract")
       } catch (err) {
         toast.error(err instanceof Error ? err.message : "Une erreur est survenue")
       }
@@ -62,13 +48,14 @@ export function PaymentFormSheet({
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger render={<Button size="sm" />}>
         <Plus />
-        Nouveau paiement
+        Nouveau paiement ponctuel
       </SheetTrigger>
       <SheetContent className="flex flex-col">
         <SheetHeader>
-          <SheetTitle>Nouveau paiement</SheetTitle>
+          <SheetTitle>Nouveau paiement ponctuel</SheetTitle>
           <SheetDescription>
-            Lié à un contrat, ou ponctuel si tu n&apos;en as pas.
+            Pour une rentrée d&apos;argent qui n&apos;est pas liée à un contrat — le
+            CA des contrats se calcule automatiquement.
           </SheetDescription>
         </SheetHeader>
         <form
@@ -76,57 +63,15 @@ export function PaymentFormSheet({
           onSubmit={handleSubmit}
           className="flex flex-1 flex-col gap-4 overflow-y-auto px-4"
         >
-          <div className="grid grid-cols-2 gap-1.5 rounded-lg bg-muted p-1">
-            {(
-              [
-                { value: "contract", label: "Lié à un contrat" },
-                { value: "standalone", label: "Ponctuel" },
-              ] as const
-            ).map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => setKind(opt.value)}
-                className={cn(
-                  "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-                  kind === opt.value
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {opt.label}
-              </button>
-            ))}
+          <div className="space-y-1.5">
+            <Label htmlFor="label">Description</Label>
+            <Input
+              id="label"
+              name="label"
+              required
+              placeholder="Ex : Prestation ponctuelle, acompte…"
+            />
           </div>
-
-          {kind === "contract" ? (
-            <div className="space-y-1.5">
-              <Label htmlFor="contract_id">Contrat</Label>
-              <Select name="contract_id" required>
-                <SelectTrigger id="contract_id" className="w-full">
-                  <SelectValue placeholder="Choisir un contrat" />
-                </SelectTrigger>
-                <SelectContent>
-                  {contracts.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.title} {c.client_name ? `— ${c.client_name}` : ""}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ) : (
-            <div className="space-y-1.5">
-              <Label htmlFor="label">Description</Label>
-              <Input
-                id="label"
-                name="label"
-                required
-                placeholder="Ex : Prestation ponctuelle, acompte…"
-              />
-            </div>
-          )}
-
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="amount">Montant (€)</Label>
