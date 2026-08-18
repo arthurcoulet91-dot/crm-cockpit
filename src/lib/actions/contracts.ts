@@ -48,6 +48,7 @@ export async function createContractRecord(formData: FormData) {
   if (error) throw new Error(error.message)
   revalidatePath("/contracts")
   revalidatePath("/clients")
+  revalidatePath("/")
 }
 
 export async function updateContractRecord(id: string, formData: FormData) {
@@ -73,6 +74,7 @@ export async function updateContractRecord(id: string, formData: FormData) {
   if (error) throw new Error(error.message)
   revalidatePath("/contracts")
   revalidatePath("/clients")
+  revalidatePath("/")
 }
 
 export async function deleteContractRecord(id: string) {
@@ -81,4 +83,5 @@ export async function deleteContractRecord(id: string) {
   if (error) throw new Error(error.message)
   revalidatePath("/contracts")
   revalidatePath("/clients")
+  revalidatePath("/")
 }
