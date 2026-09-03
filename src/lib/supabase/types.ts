@@ -19,6 +19,7 @@ export type TaskPriority = "low" | "medium" | "high"
 export type ExpenseType = "fixed" | "variable"
 export type ExpenseFrequency = "monthly" | "annual" | "one_off"
 export type IntegrationProvider = "google_calendar" | "ghl"
+export type ReminderStatus = "pending" | "done"
 
 export interface Database {
   public: {
@@ -218,6 +219,41 @@ export interface Database {
         Update: Partial<
           Database["public"]["Tables"]["integration_connections"]["Row"]
         >
+        Relationships: []
+      }
+      reminders: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          notes: string | null
+          client_id: string | null
+          remind_date: string
+          remind_time: string | null
+          status: ReminderStatus
+          reminder_email_sent_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: Partial<Database["public"]["Tables"]["reminders"]["Row"]> & {
+          user_id: string
+          title: string
+          remind_date: string
+        }
+        Update: Partial<Database["public"]["Tables"]["reminders"]["Row"]>
+        Relationships: []
+      }
+      daily_digest_log: {
+        Row: {
+          user_id: string
+          sent_date: string
+          created_at: string
+        }
+        Insert: Partial<Database["public"]["Tables"]["daily_digest_log"]["Row"]> & {
+          user_id: string
+          sent_date: string
+        }
+        Update: Partial<Database["public"]["Tables"]["daily_digest_log"]["Row"]>
         Relationships: []
       }
     }

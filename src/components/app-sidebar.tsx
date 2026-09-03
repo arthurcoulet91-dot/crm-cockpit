@@ -8,6 +8,7 @@ import {
   FileText,
   Workflow,
   CheckSquare2,
+  BellRing,
   CalendarDays,
   Wallet,
   Settings,
@@ -34,6 +35,7 @@ const navMain = [
   { title: "Contrats", url: "/contracts", icon: FileText },
   { title: "Pipeline", url: "/pipeline", icon: Workflow },
   { title: "Tâches", url: "/tasks", icon: CheckSquare2 },
+  { title: "Rappels", url: "/reminders", icon: BellRing },
   { title: "Calendrier", url: "/calendar", icon: CalendarDays },
   { title: "Finances", url: "/finances", icon: Wallet },
 ]
