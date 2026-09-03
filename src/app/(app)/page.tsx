@@ -1,3 +1,4 @@
+import type { ElementType } from "react"
 import Link from "next/link"
 import {
   TrendingUp,
@@ -7,6 +8,8 @@ import {
   Workflow,
   CalendarDays,
   Minus,
+  Euro,
+  Wallet,
 } from "lucide-react"
 import { startOfYear, endOfYear, format } from "date-fns"
 
@@ -24,6 +27,26 @@ import { contractRevenueForPeriod, type RevenueContract } from "@/lib/revenue"
 import { fetchUpcomingGoogleEvents, getValidGoogleAccessToken } from "@/lib/google-calendar"
 import { cn } from "@/lib/utils"
 import type { OpportunityStage } from "@/lib/supabase/types"
+
+function StatIcon({
+  icon: Icon,
+  tone,
+}: {
+  icon: ElementType
+  tone: "primary" | "success" | "muted" | "warning"
+}) {
+  const toneClasses = {
+    primary: "bg-primary/10 text-primary",
+    success: "bg-success/15 text-success",
+    muted: "bg-muted text-muted-foreground",
+    warning: "bg-warning/15 text-warning",
+  } as const
+  return (
+    <div className={cn("flex size-7 items-center justify-center rounded-lg", toneClasses[tone])}>
+      <Icon className="size-3.5" />
+    </div>
+  )
+}
 
 const stageOrder: OpportunityStage[] = [
   "proposal_sent",
@@ -168,8 +191,9 @@ export default async function DashboardPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase">
+          <CardHeader className="flex items-center gap-2.5 pb-2">
+            <StatIcon icon={Euro} tone="primary" />
+            <CardTitle className="flex-1 text-xs font-medium text-muted-foreground uppercase">
               CA — {thisMonth.label}
             </CardTitle>
           </CardHeader>
@@ -200,8 +224,9 @@ export default async function DashboardPage() {
         </Card>
 
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase">
+          <CardHeader className="flex items-center gap-2.5 pb-2">
+            <StatIcon icon={Wallet} tone="success" />
+            <CardTitle className="flex-1 text-xs font-medium text-muted-foreground uppercase">
               Bénéfice — {thisMonth.label}
             </CardTitle>
           </CardHeader>
@@ -221,9 +246,9 @@ export default async function DashboardPage() {
         </Card>
 
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase">
-              <FileText className="size-3.5" />
+          <CardHeader className="flex items-center gap-2.5 pb-2">
+            <StatIcon icon={FileText} tone="muted" />
+            <CardTitle className="flex-1 text-xs font-medium text-muted-foreground uppercase">
               Contrats actifs
             </CardTitle>
           </CardHeader>
@@ -236,9 +261,9 @@ export default async function DashboardPage() {
         </Card>
 
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase">
-              <FileText className="size-3.5" />
+          <CardHeader className="flex items-center gap-2.5 pb-2">
+            <StatIcon icon={CalendarDays} tone="warning" />
+            <CardTitle className="flex-1 text-xs font-medium text-muted-foreground uppercase">
               Contrats {now.getFullYear()}
             </CardTitle>
           </CardHeader>

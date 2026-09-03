@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Manrope, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
 });
 
@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Cockpit",
+  title: "Blue Otter — Cockpit",
   description: "Cockpit de gestion — clients, contrats, CA et bénéfice, tâches et agenda.",
 };
 
@@ -27,7 +27,7 @@ export default function RootLayout({
     <html
       lang="fr"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${manrope.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="h-full">
         <ThemeProvider

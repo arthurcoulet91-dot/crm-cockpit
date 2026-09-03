@@ -2,9 +2,10 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { Command, Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
 
 import { createClient } from "@/lib/supabase/client"
+import { OtterMark } from "@/components/brand-mark"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -58,10 +59,10 @@ export default function LoginPage() {
     <div className="flex min-h-svh items-center justify-center bg-muted/30 p-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="flex flex-col items-center gap-2 text-center">
-          <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Command className="size-4.5" />
+          <div className="flex size-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-[oklch(0.62_0.13_195)] text-primary-foreground">
+            <OtterMark className="size-4.5" />
           </div>
-          <h1 className="text-lg font-semibold">Cockpit</h1>
+          <h1 className="text-lg font-semibold tracking-tight">Blue Otter</h1>
           <p className="text-sm text-muted-foreground">
             Ton outil de gestion quotidien
           </p>

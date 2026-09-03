@@ -13,7 +13,6 @@ import {
   Wallet,
   Settings,
   UsersRound,
-  Command,
 } from "lucide-react"
 
 import {
@@ -28,6 +27,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { OtterMark } from "@/components/brand-mark"
 
 const navMain = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
@@ -54,13 +54,13 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" render={<Link href="/" />}>
-              <div className="flex aspect-square size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                <Command className="size-4" />
+              <div className="flex aspect-square size-7 items-center justify-center rounded-md bg-gradient-to-br from-primary to-[oklch(0.62_0.13_195)] text-primary-foreground">
+                <OtterMark />
               </div>
               <div className="grid flex-1 text-left leading-tight">
-                <span className="truncate font-semibold">Cockpit</span>
+                <span className="truncate font-semibold tracking-tight">Blue Otter</span>
                 <span className="truncate text-xs text-muted-foreground">
-                  Gestion quotidienne
+                  Cockpit de gestion
                 </span>
               </div>
             </SidebarMenuButton>
@@ -83,6 +83,7 @@ export function AppSidebar() {
                       render={<Link href={item.url} />}
                       isActive={isActive}
                       tooltip={item.title}
+                      className="data-active:border-l-2 data-active:border-primary data-active:pl-[calc(--spacing(2)-2px)] data-active:bg-primary/10 data-active:text-primary [&_svg]:data-active:text-primary"
                     >
                       <item.icon />
                       <span>{item.title}</span>
